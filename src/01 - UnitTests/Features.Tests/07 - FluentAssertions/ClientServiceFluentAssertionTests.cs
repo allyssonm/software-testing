@@ -1,27 +1,27 @@
 ﻿using Features.Clients;
+using FluentAssertions;
+using FluentAssertions.Extensions;
 using MediatR;
 using Moq;
-using System.Linq;
 using System.Threading;
 using Xunit;
 
 namespace Features.Tests
 {
     [Collection(nameof(ClientAutoMockerCollection))]
-
-    public class ClientServiceAutoMockerTests
+    public class ClienteServiceFluentAssertionTests
     {
         readonly ClientTestsAutoMockerFixture _clientTestsAutoMockerFixture;
         private readonly ClientService _clientService;
 
-        public ClientServiceAutoMockerTests(ClientTestsAutoMockerFixture clientTestsAutoMockerFixture)
+        public ClienteServiceFluentAssertionTests(ClientTestsAutoMockerFixture clienteTestsFixture)
         {
-            _clientTestsAutoMockerFixture = clientTestsAutoMockerFixture;
+            _clientTestsAutoMockerFixture = clienteTestsFixture;
             _clientService = _clientTestsAutoMockerFixture.GetClientService();
         }
 
         [Fact(DisplayName = "Success on Adding Client")]
-        [Trait("UnitTests", "Client Service AutoMock Tests")]
+        [Trait("UnitTests", "Client Service Fluent Assertions Tests")]
         public void ClientService_Add_ShouldReturnsSuccess()
         {
             // Arrange
@@ -31,13 +31,13 @@ namespace Features.Tests
             _clientService.Add(client);
 
             // Assert
-            Assert.True(client.IsValid());
+            client.IsValid().Should().BeTrue();
             _clientTestsAutoMockerFixture.Mocker.GetMock<IClientRepository>().Verify(r => r.Add(client), Times.Once);
             _clientTestsAutoMockerFixture.Mocker.GetMock<IMediator>().Verify(m => m.Publish(It.IsAny<INotification>(), CancellationToken.None), Times.Once);
         }
 
         [Fact(DisplayName = "Fail on Adding Client")]
-        [Trait("UnitTests", "Client Service AutoMock Tests")]
+        [Trait("UnitTests", "Client Service Fluent Assertions Tests")]
         public void ClientService_Add_ShouldReturnsFailDueToInvalidClient()
         {
             // Arrange
@@ -47,13 +47,13 @@ namespace Features.Tests
             _clientService.Add(client);
 
             // Assert
-            Assert.False(client.IsValid());
+            client.IsValid().Should().BeFalse("Has validation errors.");
             _clientTestsAutoMockerFixture.Mocker.GetMock<IClientRepository>().Verify(r => r.Add(client), Times.Never);
             _clientTestsAutoMockerFixture.Mocker.GetMock<IMediator>().Verify(m => m.Publish(It.IsAny<INotification>(), CancellationToken.None), Times.Never);
         }
 
         [Fact(DisplayName = "Get All Active Clients")]
-        [Trait("UnitTests", "Client Service AutoMock Tests")]
+        [Trait("UnitTests", "Client Service Fluent Assertions Tests")]
         public void ClientService_GetAllActive_ShouldReturnsOnlyActiveClients()
         {
             // Arrange
@@ -64,9 +64,14 @@ namespace Features.Tests
             var clients = _clientService.GetAllActive();
 
             // Assert 
+            clients.Should().HaveCountGreaterOrEqualTo(1).And.OnlyHaveUniqueItems();
+            clients.Should().NotContain(c => !c.Active);
+
             _clientTestsAutoMockerFixture.Mocker.GetMock<IClientRepository>().Verify(r => r.GetAll(), Times.Once);
-            Assert.True(clients.Any());
-            Assert.False(clients.Count(c => !c.Active) > 0);
+
+            _clientService.ExecutionTimeOf(c => c.GetAllActive())
+                .Should()
+                .BeLessOrEqualTo(50.Milliseconds(), "Is executed more than a thousand times per second.");
         }
     }
 }

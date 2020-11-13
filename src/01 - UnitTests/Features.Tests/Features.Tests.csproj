@@ -8,18 +8,17 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="31.0.3" />
+    <PackageReference Include="FluentAssertions" Version="5.10.3" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
     <PackageReference Include="MOQ" Version="4.15.1" />
     <PackageReference Include="MOQ.automock" Version="2.1.0" />
     <PackageReference Include="xunit" Version="2.4.0" />
+    <PackageReference Include="xunit.runner.console" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.0" />
     <PackageReference Include="coverlet.collector" Version="1.2.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="07 - FluentAssertions\" />
-    <Folder Include="08 - Skip\" />
-    <Folder Include="09 - Code Coverage\" />
   </ItemGroup>
 
   <ItemGroup>

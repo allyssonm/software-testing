@@ -1,0 +1,6 @@
+<Playlist Version="1.0">
+  <Add Test="Features.Tests.InvalidClientTests.Client_NewClient_ShouldNotBeValid" />
+  <Add Test="Features.Tests.ValidClientTests.Client_NewClient_ShouldBeValid" />
+  <Add Test="Features.Tests.ClientFluentAssertionsTests.Client_NewClient_ShouldBeValid" />
+  <Add Test="Features.Tests.ClientFluentAssertionsTests.Client_NewClient_ShouldNotBeValid" />
+</Playlist>
