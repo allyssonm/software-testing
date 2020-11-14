@@ -26,13 +26,37 @@ namespace NerdStore.Sales.Domain
             TotalPrice = OrderItems.Sum(x => x.CalculatePrice());
         }
 
-        public void AddOrderItem(OrderItem orderItem)
+        private bool OrderItemExists(OrderItem orderItem)
         {
-            if (orderItem.Quantity > MAX_ORDER_ITEMS) throw new DomainException($"Max of {MAX_ORDER_ITEMS} units per product.");
+            return _orderItems.Any(x => x.ProductId == orderItem.ProductId);
+        }
 
-            if (_orderItems.Any(x => x.ProductId == orderItem.ProductId))
+        private void ValidateOrderItemInexistent(OrderItem orderItem)
+        {
+            if (!OrderItemExists(orderItem)) throw new DomainException($"Order item doesn't exist in order.");
+        }
+
+        private void ValidateOrderItemQuantityAllowed(OrderItem orderItem)
+        {
+            var itemsQuantity = orderItem.Quantity;
+
+            if (OrderItemExists(orderItem))
             {
                 var existentItem = _orderItems.FirstOrDefault(x => x.ProductId == orderItem.ProductId);
+                itemsQuantity += existentItem.Quantity;
+            }
+
+            if (itemsQuantity > MAX_ORDER_ITEMS) throw new DomainException($"Max of {MAX_ORDER_ITEMS} units per product.");
+        }
+
+        public void AddOrderItem(OrderItem orderItem)
+        {
+            ValidateOrderItemQuantityAllowed(orderItem);
+
+            if (OrderItemExists(orderItem))
+            {
+                var existentItem = _orderItems.FirstOrDefault(x => x.ProductId == orderItem.ProductId);
+
                 existentItem.AddUnits(orderItem.Quantity);
                 orderItem = existentItem;
 
@@ -40,6 +64,28 @@ namespace NerdStore.Sales.Domain
             }
 
             _orderItems.Add(orderItem);
+            CalculateOrderPrice();
+        }
+
+        public void UpdateOrderItem(OrderItem orderItem)
+        {
+            ValidateOrderItemInexistent(orderItem);
+            ValidateOrderItemQuantityAllowed(orderItem);
+
+            var existentItem = _orderItems.FirstOrDefault(x => x.ProductId == orderItem.ProductId);
+
+            _orderItems.Remove(existentItem);
+            _orderItems.Add(orderItem);
+
+            CalculateOrderPrice();
+        }
+
+        public void RemoveOrderItem(OrderItem orderItem)
+        {
+            ValidateOrderItemInexistent(orderItem);
+
+            _orderItems.Remove(orderItem);
+
             CalculateOrderPrice();
         }
 
