@@ -173,5 +173,126 @@ namespace NerdStore.Sales.Domain.Tests
             // Assert
             Assert.Equal(totalPrice, order.TotalPrice);
         }
+
+        [Fact(DisplayName = "Apply Valid Voucher")]
+        [Trait("TDD", "Sales - Order")]
+        public void Order_ApplyValidVoucher_ShouldReturnTrue()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var voucher = new Voucher("PROMO-15-CAD", null, 1,
+                1, VoucherDiscountType.Value, DateTime.Now.AddDays(15), true, false);
+
+            // Act
+            var result = order.ApplyVoucher(voucher);
+
+            // Assert
+            Assert.True(result.IsValid);
+        }
+
+        [Fact(DisplayName = "Apply Inalid Voucher")]
+        [Trait("TDD", "Sales - Order")]
+        public void Order_ApplyInvalidVoucher_ShouldReturnErrors()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var voucher = new Voucher("PROMO-15-CAD", 1, null,
+                1, VoucherDiscountType.Value, DateTime.Now.AddDays(-1), true, true);
+
+            // Act
+            var result = order.ApplyVoucher(voucher);
+
+            // Assert
+            Assert.False(result.IsValid);
+        }
+
+        [Fact(DisplayName = "Apply Voucher Discount Value Type")]
+        [Trait("TDD", "Sales - Order")]
+        public void ApplyVoucher_VoucherDiscountValueType_ShouldDiscountFromTotalPrice()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var orderItem = new OrderItem(Guid.NewGuid(), "Test Foo", 2, 100);
+            var orderItem2 = new OrderItem(Guid.NewGuid(), "Test Item", 2, 100);
+            order.AddOrderItem(orderItem);
+            order.AddOrderItem(orderItem2);
+
+            var voucher = new Voucher("PROMO-15-CAD", null, 15,
+                1, VoucherDiscountType.Value, DateTime.Now.AddDays(10), true, false);
+
+            var newTotalPrice = order.TotalPrice - voucher.DiscountValue;
+
+            // Act
+            order.ApplyVoucher(voucher);
+
+            // Assert
+            Assert.Equal(newTotalPrice, order.TotalPrice);
+        }
+
+        [Fact(DisplayName = "Apply Voucher Discount Percent Type")]
+        [Trait("TDD", "Sales - Order")]
+        public void ApplyVoucher_VoucherDiscountPercentType_ShouldDiscountFromTotalPrice()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var orderItem = new OrderItem(Guid.NewGuid(), "Test Foo", 2, 100);
+            var orderItem2 = new OrderItem(Guid.NewGuid(), "Test Item", 2, 100);
+            order.AddOrderItem(orderItem);
+            order.AddOrderItem(orderItem2);
+
+            var voucher = new Voucher("PROMO-15-CAD", 15, null,
+                1, VoucherDiscountType.Percent, DateTime.Now.AddDays(10), true, false);
+
+            var discount = (order.TotalPrice * voucher.DiscountPercent) / 100;
+            var newTotalPrice = order.TotalPrice - discount;
+
+            // Act
+            order.ApplyVoucher(voucher);
+
+            // Assert
+            Assert.Equal(newTotalPrice, order.TotalPrice);
+        }
+
+        [Fact(DisplayName = "Apply Voucher Discount Exceeds Total Price")]
+        [Trait("TDD", "Sales - Order")]
+        public void ApplyVoucher_DiscountExceedsTotalPrice_TotalPriceShouldBeZero()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var orderItem = new OrderItem(Guid.NewGuid(), "Test Item", 2, 100);
+            order.AddOrderItem(orderItem);
+
+            var voucher = new Voucher("PROMO-15-CAD", null, 300, 1,
+                VoucherDiscountType.Value, DateTime.Now.AddDays(10), true, false);
+
+            // Act
+            order.ApplyVoucher(voucher);
+
+            // Assert
+            Assert.Equal(0, order.TotalPrice);
+        }
+
+        [Fact(DisplayName = "Apply Voucher Recalculate Discount On Order Modified")]
+        [Trait("TDD", "Sales - Order")]
+        public void ApplyVoucher_OrderItemsModified_ShouldRecalculateDiscountOnTotalPrice()
+        {
+            // Arrange
+            var order = Order.OrderFactory.NewOrderDraft(Guid.NewGuid());
+            var orderItem = new OrderItem(Guid.NewGuid(), "Test Item", 2, 100);
+            order.AddOrderItem(orderItem);
+
+            var voucher = new Voucher("PROMO-15-CAD", null, 300, 1,
+                VoucherDiscountType.Value, DateTime.Now.AddDays(10), true, false);
+            order.ApplyVoucher(voucher);
+
+            var orderItem2 = new OrderItem(Guid.NewGuid(), "Test Foo", 4, 25);
+
+            // Act
+            order.AddOrderItem(orderItem2);
+
+            // Assert
+            var expectedTotalPrice = order.OrderItems.Sum(x => x.Quantity * x.UnitPrice) - voucher.DiscountValue;
+            Assert.Equal(expectedTotalPrice, order.TotalPrice);
+        }
     }
 }

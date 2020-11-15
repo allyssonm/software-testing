@@ -1,4 +1,5 @@
-﻿using NerdStore.Core.DomainObjects;
+﻿using FluentValidation.Results;
+using NerdStore.Core.DomainObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +19,16 @@ namespace NerdStore.Sales.Domain
 
         public Guid ClientId { get; set; }
         public decimal TotalPrice { get; private set; }
+        public decimal Discount { get; private set; }
         public OrderStatus OrderStatus { get; private set; }
         public IReadOnlyCollection<OrderItem> OrderItems => _orderItems;
+        public Voucher Voucher { get; private set; }
+        public bool UsedVoucher { get; private set; }
 
         private void CalculateOrderPrice()
         {
             TotalPrice = OrderItems.Sum(x => x.CalculatePrice());
+            CalculateTotalPriceWithVoucherDiscount();
         }
 
         private bool OrderItemExists(OrderItem orderItem)
@@ -94,6 +99,46 @@ namespace NerdStore.Sales.Domain
             OrderStatus = OrderStatus.Draft;
         }
 
+        public ValidationResult ApplyVoucher(Voucher voucher)
+        {
+            var validationResult = voucher.ValidateApplicability();
+            if (!validationResult.IsValid) return validationResult;
+
+            Voucher = voucher;
+            UsedVoucher = true;
+            CalculateOrderPrice();
+
+            return validationResult;
+        }
+
+        public void CalculateTotalPriceWithVoucherDiscount()
+        {
+            if (!UsedVoucher) return;
+
+            decimal discount = 0;
+            var value = TotalPrice;
+
+            if (Voucher.VoucherDiscountType == VoucherDiscountType.Percent)
+            {
+                if (Voucher.DiscountPercent.HasValue)
+                {
+                    discount = (value * Voucher.DiscountPercent.Value) / 100;
+                    value -= discount;
+                }
+            }
+            else
+            {
+                if (Voucher.DiscountValue.HasValue)
+                {
+                    discount = Voucher.DiscountValue.Value;
+                    value -= discount;
+                }
+            }
+
+            TotalPrice = value < 0 ? 0 : value;
+            Discount = discount;
+        }
+
         public static class OrderFactory
         {
             public static Order NewOrderDraft(Guid clientId)
@@ -107,42 +152,5 @@ namespace NerdStore.Sales.Domain
                 return order;
             }
         }
-    }
-
-    public class OrderItem
-    {
-        public OrderItem(Guid productId, string productName, int quantity, decimal unitValue)
-        {
-            if (quantity < Order.MIN_ORDER_ITEMS) throw new DomainException($"Min of {Order.MIN_ORDER_ITEMS} units per product.");
-
-            ProductId = productId;
-            ProductName = productName;
-            Quantity = quantity;
-            UnitPrice = unitValue;
-        }
-
-        public Guid ProductId { get; private set; }
-        public string ProductName { get; private set; }
-        public int Quantity { get; private set; }
-        public decimal UnitPrice { get; private set; }
-
-        internal void AddUnits(int units)
-        {
-            Quantity += units;
-        }
-
-        internal decimal CalculatePrice()
-        {
-            return Quantity * UnitPrice;
-        }
-    }
-
-    public enum OrderStatus
-    {
-        Draft = 0,
-        Initialized = 1,
-        Paid = 4,
-        Delivered = 5,
-        Cancelled = 6
     }
 }
