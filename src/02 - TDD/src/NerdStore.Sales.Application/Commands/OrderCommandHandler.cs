@@ -1,6 +1,9 @@
 ﻿using MediatR;
+using NerdStore.Core.DomainObjects;
+using NerdStore.Core.Messages;
 using NerdStore.Sales.Application.Events;
 using NerdStore.Sales.Domain;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -19,11 +22,34 @@ namespace NerdStore.Sales.Application.Commands
 
         public async Task<bool> Handle(AddOrderItemCommand command, CancellationToken cancellationToken)
         {
-            var orderItem = new OrderItem(command.ProductId, command.Name, command.Quantity, command.UnitValue);
-            var order = Order.OrderFactory.NewOrderDraft(command.ClientId);
-            order.AddOrderItem(orderItem);
+            if (!IsCommandValid(command)) return false;
 
-            _orderRepository.Add(order);
+            var order = await _orderRepository.GetDraftOrderByClientId(command.ClientId);
+            var orderItem = new OrderItem(command.ProductId, command.Name, command.Quantity, command.UnitValue);
+
+            if (order == null)
+            {
+                order = Order.OrderFactory.NewOrderDraft(command.ClientId);
+                order.AddOrderItem(orderItem);
+
+                _orderRepository.Add(order);
+            }
+            else
+            {
+                var existentOrderItem = order.OrderItemExists(orderItem);
+                order.AddOrderItem(orderItem);
+
+                if (existentOrderItem)
+                {
+                    _orderRepository.UpdateOrderItem(order.OrderItems.FirstOrDefault(x => x.ProductId == orderItem.ProductId));
+                }
+                else
+                {
+                    _orderRepository.AddOrderItem(orderItem);
+                }
+
+                _orderRepository.Update(order);
+            }
 
             var @event = new AddedOrderItemEvent(
                 order.ClientId,
@@ -36,6 +62,18 @@ namespace NerdStore.Sales.Application.Commands
             order.AddEvent(@event);
 
             return await _orderRepository.UnitOfWork.Commit();
+        }
+
+        private bool IsCommandValid(Command command)
+        {
+            if (command.IsValid()) return true;
+
+            foreach (var error in command.ValidationResult.Errors)
+            {
+                _mediator.Publish(new DomainNotification(command.MessageType, error.ErrorMessage));
+            }
+
+            return false;
         }
     }
 }

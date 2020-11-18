@@ -31,7 +31,7 @@ namespace NerdStore.Sales.Domain
             CalculateTotalPriceWithVoucherDiscount();
         }
 
-        private bool OrderItemExists(OrderItem orderItem)
+        public bool OrderItemExists(OrderItem orderItem)
         {
             return _orderItems.Any(x => x.ProductId == orderItem.ProductId);
         }
