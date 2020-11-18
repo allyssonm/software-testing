@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace NerdStore.Sales.Domain
 {
-    public class Order
+    public class Order : Entity, IAggregateRoot
     {
         private readonly List<OrderItem> _orderItems;
         public static int MAX_ORDER_ITEMS => 15;
