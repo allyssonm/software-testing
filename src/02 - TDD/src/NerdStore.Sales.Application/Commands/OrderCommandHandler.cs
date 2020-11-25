@@ -9,7 +9,11 @@ using System.Threading.Tasks;
 
 namespace NerdStore.Sales.Application.Commands
 {
-    public class OrderCommandHandler : IRequestHandler<AddOrderItemCommand, bool>
+    public class OrderCommandHandler :
+        IRequestHandler<AddOrderItemCommand, bool>,
+        IRequestHandler<UpdateOrderItemCommand, bool>,
+        IRequestHandler<RemoveOrderItemCommand, bool>,
+        IRequestHandler<ApplyOrderVoucherCommand, bool>
     {
         private readonly IOrderRepository _orderRepository;
         private readonly IMediator _mediator;
@@ -62,6 +66,21 @@ namespace NerdStore.Sales.Application.Commands
             order.AddEvent(@event);
 
             return await _orderRepository.UnitOfWork.Commit();
+        }
+
+        public Task<bool> Handle(UpdateOrderItemCommand request, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<bool> Handle(RemoveOrderItemCommand request, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task<bool> Handle(ApplyOrderVoucherCommand request, CancellationToken cancellationToken)
+        {
+            throw new System.NotImplementedException();
         }
 
         private bool IsCommandValid(Command command)
