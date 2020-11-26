@@ -8,7 +8,6 @@ namespace NerdStore.Sales.Domain
 {
     public class Order : Entity, IAggregateRoot
     {
-        private readonly List<OrderItem> _orderItems;
         public static int MAX_ORDER_ITEMS => 15;
         public static int MIN_ORDER_ITEMS => 1;
 
@@ -17,13 +16,17 @@ namespace NerdStore.Sales.Domain
             _orderItems = new List<OrderItem>();
         }
 
+        public int Code { get; set; }
         public Guid ClientId { get; set; }
+        public Guid VoucherId { get; set; }
         public decimal TotalPrice { get; private set; }
         public decimal Discount { get; private set; }
         public OrderStatus OrderStatus { get; private set; }
-        public IReadOnlyCollection<OrderItem> OrderItems => _orderItems;
-        public Voucher Voucher { get; private set; }
         public bool UsedVoucher { get; private set; }
+        public Voucher Voucher { get; private set; }
+
+        private readonly List<OrderItem> _orderItems;
+        public IReadOnlyCollection<OrderItem> OrderItems => _orderItems;
 
         private void CalculateOrderPrice()
         {

@@ -1,55 +1,62 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
 using NerdStore.Core.Data;
-using NerdStore.Core.DomainObjects;
+using NerdStore.Core.Messages;
+using NerdStore.Sales.Domain;
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NerdStore.Sales.Data
 {
-    public class SalesContext : DbContext, IUnitOfWork
+    public class SalesContext : DbContext
     {
-        private readonly IMediator _mediator;
+        //private readonly IMediator _mediator;
 
-        public SalesContext(DbContextOptions<SalesContext> options, IMediator mediator) : base(options)
+        public SalesContext(DbContextOptions<SalesContext> options) : base(options)
         {
-            _mediator = mediator;
+            //_mediator = mediator;
         }
+
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Voucher> Vouchers { get; set; }
 
         public async Task<bool> Commit()
         {
-            var success = await base.SaveChangesAsync() > 0;
+            foreach (var entry in ChangeTracker.Entries().Where(entry => entry.Entity.GetType().GetProperty("RegisterDate") != null))
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Property("RegisterDate").CurrentValue = DateTime.Now;
+                }
 
-            if (success) await _mediator.PublishEvents(this);
+                if (entry.State == EntityState.Modified)
+                {
+                    entry.Property("RegisterDate").IsModified = false;
+                }
+            }
 
-            return success;
+            var sucesso = await base.SaveChangesAsync() > 0;
+            //if (sucesso) await _mediator.PublishEvents(this);
+
+            return sucesso;
         }
-    }
 
-    public static class MediatorExtension
-    {
-        public static async Task PublishEvents(this IMediator mediator, SalesContext ctx)
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            var domainEntities = ctx.ChangeTracker
-                .Entries<Entity>()
-                .Where(x => x.Entity.Notifications != null && x.Entity.Notifications.Any());
+            foreach (var property in modelBuilder.Model.GetEntityTypes().SelectMany(
+                e => e.GetProperties().Where(p => p.ClrType == typeof(string))))
+                property.SetColumnType("varchar(100)");
 
-            var domainEvents = domainEntities
-                .SelectMany(x => x.Entity.Notifications)
-                .ToList();
+            modelBuilder.Ignore<Event>();
 
-            domainEntities.ToList()
-                .ForEach(entity => entity.Entity.ClearEvents());
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(SalesContext).Assembly);
 
-            var tasks = domainEvents
-                .Select(async (domainEvent) => {
-                    await mediator.Publish(domainEvent);
-                });
+            foreach (var relationship in modelBuilder.Model.GetEntityTypes().SelectMany(e => e.GetForeignKeys())) relationship.DeleteBehavior = DeleteBehavior.ClientSetNull;
 
-            await Task.WhenAll(tasks);
+            modelBuilder.HasSequence<int>("MySequence").StartsAt(1000).IncrementsBy(1);
+            base.OnModelCreating(modelBuilder);
         }
     }
 }

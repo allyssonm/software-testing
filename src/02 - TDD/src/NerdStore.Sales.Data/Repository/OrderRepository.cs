@@ -1,42 +1,60 @@
-﻿using NerdStore.Core.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using NerdStore.Core.Data;
 using NerdStore.Sales.Domain;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace NerdStore.Sales.Data.Repository
 {
     public class OrderRepository : IOrderRepository
     {
+        private readonly SalesContext _context;
+
+        public OrderRepository(SalesContext context)
+        {
+            _context = context;
+        }
+
         public IUnitOfWork UnitOfWork => throw new NotImplementedException();
 
         public void Add(Order order)
         {
-            throw new NotImplementedException();
+            _context.Orders.Add(order);
         }
 
-        public void AddOrderItem(OrderItem order)
+        public void AddOrderItem(OrderItem orderItem)
         {
-            throw new NotImplementedException();
+            _context.OrderItems.Add(orderItem);
         }
 
-        public void Dispose()
+        public async Task<Order> GetDraftOrderByClientId(Guid clientId)
         {
-            throw new NotImplementedException();
-        }
+            var order = await _context.Orders.FirstOrDefaultAsync(p => p.ClientId == clientId && p.OrderStatus == OrderStatus.Draft);
+            if (order == null) return null;
 
-        public Task<Order> GetDraftOrderByClientId(Guid clientId)
-        {
-            throw new NotImplementedException();
+            await _context.Entry(order)
+                .Collection(i => i.OrderItems).LoadAsync();
+
+            if (order.VoucherId != null)
+            {
+                await _context.Entry(order)
+                    .Reference(i => i.Voucher).LoadAsync();
+            }
+
+            return order;
         }
 
         public void Update(Order order)
         {
-            throw new NotImplementedException();
+            _context.Orders.Update(order);
         }
 
-        public void UpdateOrderItem(OrderItem order)
+        public void UpdateOrderItem(OrderItem orderItem)
+        {
+            _context.OrderItems.Update(orderItem);
+        }
+
+        public void Dispose()
         {
             throw new NotImplementedException();
         }

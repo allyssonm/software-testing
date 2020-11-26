@@ -54,8 +54,10 @@ namespace NerdStore.WebApplication.MVC
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddIdentityCore<IdentityUser>()
-                .AddSignInManager()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.AddScoped<SignInManager<IdentityUser>, SignInManager<IdentityUser>>();
+            services.AddScoped<UserManager<IdentityUser>, UserManager<IdentityUser>>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
             services.AddHttpContextAccessor();

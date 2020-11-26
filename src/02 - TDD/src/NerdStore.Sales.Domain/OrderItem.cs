@@ -3,8 +3,12 @@ using System;
 
 namespace NerdStore.Sales.Domain
 {
-    public class OrderItem
+    public class OrderItem : Entity
     {
+        public OrderItem()
+        {
+        }
+
         public OrderItem(Guid productId, string productName, int quantity, decimal unitValue)
         {
             if (quantity < Order.MIN_ORDER_ITEMS) throw new DomainException($"Min of {Order.MIN_ORDER_ITEMS} units per product.");
@@ -15,10 +19,13 @@ namespace NerdStore.Sales.Domain
             UnitPrice = unitValue;
         }
 
+        public Guid OrderId { get; set; }
         public Guid ProductId { get; private set; }
         public string ProductName { get; private set; }
         public int Quantity { get; private set; }
         public decimal UnitPrice { get; private set; }
+
+        public Order Order { get; set; }
 
         internal void AddUnits(int units)
         {

@@ -21,8 +21,7 @@ namespace NerdStore.Catalog.Data.Repository
 
         public async Task<IEnumerable<Product>> GetAll()
         {
-            return new List<Product>();
-            //return await _context.Products.AsNoTracking().ToListAsync();
+            return await _context.Products.AsNoTracking().ToListAsync();
         }
 
         public async Task<Product> GetById(Guid id)
