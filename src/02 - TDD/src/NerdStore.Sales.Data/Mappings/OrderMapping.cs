@@ -13,6 +13,12 @@ namespace NerdStore.Sales.Data.Mappings
             builder.Property(c => c.Code)
                 .HasDefaultValueSql("NEXT VALUE FOR MySequence");
 
+            builder.Property(c => c.Discount)
+                .HasColumnType("decimal(5,2)");
+
+            builder.Property(c => c.TotalPrice)
+                .HasColumnType("decimal(5,2)");
+
             // 1 : N => Pedido : PedidoItems
             builder.HasMany(c => c.OrderItems)
                 .WithOne(c => c.Order)

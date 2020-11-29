@@ -8,9 +8,7 @@ namespace NerdStore.Sales.Domain
 {
     public class Voucher : Entity
     {
-        public Voucher()
-        {
-        }
+        protected Voucher() { }
 
         public Voucher(string code, decimal? discountPercent, decimal? discountValue, int quantity,
             VoucherDiscountType voucherDiscountType, DateTime expirationDate, bool active, bool used)

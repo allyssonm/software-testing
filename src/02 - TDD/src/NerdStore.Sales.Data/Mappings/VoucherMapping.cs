@@ -14,6 +14,12 @@ namespace NerdStore.Sales.Data.Mappings
                 .IsRequired()
                 .HasColumnType("varchar(100)");
 
+            builder.Property(c => c.DiscountValue)
+                .HasColumnType("decimal(5,2)");
+
+            builder.Property(c => c.DiscountPercent)
+                .HasColumnType("decimal(5,2)");
+
             // 1 : N => Voucher : Pedidos
             builder.HasMany(c => c.Orders)
                 .WithOne(c => c.Voucher)

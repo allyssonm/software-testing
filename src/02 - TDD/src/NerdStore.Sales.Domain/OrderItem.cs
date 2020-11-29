@@ -5,9 +5,7 @@ namespace NerdStore.Sales.Domain
 {
     public class OrderItem : Entity
     {
-        public OrderItem()
-        {
-        }
+        protected OrderItem() { }
 
         public OrderItem(Guid productId, string productName, int quantity, decimal unitValue)
         {

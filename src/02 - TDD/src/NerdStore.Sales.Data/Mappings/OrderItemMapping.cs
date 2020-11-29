@@ -15,6 +15,9 @@ namespace NerdStore.Sales.Data.Mappings
                 .IsRequired()
                 .HasColumnType("varchar(250)");
 
+            builder.Property(c => c.UnitPrice)
+                .HasColumnType("decimal(5,2)");
+
             // 1 : N => Pedido : Pagamento
             builder.HasOne(c => c.Order)
                 .WithMany(c => c.OrderItems);
