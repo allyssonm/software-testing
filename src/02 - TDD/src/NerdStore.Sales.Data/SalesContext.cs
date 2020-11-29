@@ -9,13 +9,13 @@ using System.Threading.Tasks;
 
 namespace NerdStore.Sales.Data
 {
-    public class SalesContext : DbContext
+    public class SalesContext : DbContext, IUnitOfWork
     {
-        //private readonly IMediator _mediator;
+        private readonly IMediator _mediator;
 
-        public SalesContext(DbContextOptions<SalesContext> options) : base(options)
+        public SalesContext(DbContextOptions<SalesContext> options, IMediator mediator) : base(options)
         {
-            //_mediator = mediator;
+            _mediator = mediator;
         }
 
         public DbSet<Order> Orders { get; set; }
@@ -38,7 +38,7 @@ namespace NerdStore.Sales.Data
             }
 
             var sucesso = await base.SaveChangesAsync() > 0;
-            //if (sucesso) await _mediator.PublishEvents(this);
+            if (sucesso) await _mediator.PublishEvents(this);
 
             return sucesso;
         }
