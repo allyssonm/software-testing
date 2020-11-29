@@ -22,6 +22,7 @@ namespace NerdStore.Sales.Domain
         public decimal TotalPrice { get; private set; }
         public decimal Discount { get; private set; }
         public OrderStatus OrderStatus { get; private set; }
+        public DateTime RegisterDate { get; private set; }
         public bool UsedVoucher { get; private set; }
         public Voucher Voucher { get; private set; }
 
@@ -95,6 +96,12 @@ namespace NerdStore.Sales.Domain
             _orderItems.Remove(orderItem);
 
             CalculateOrderPrice();
+        }
+
+        public void UpdateUnits(OrderItem item, int units)
+        {
+            item.UpdateUnits(units);
+            UpdateOrderItem(item);
         }
 
         public void MarkAsDraft()

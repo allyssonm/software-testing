@@ -2,6 +2,8 @@
 using NerdStore.Core.Data;
 using NerdStore.Sales.Domain;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace NerdStore.Sales.Data.Repository
@@ -54,9 +56,29 @@ namespace NerdStore.Sales.Data.Repository
             _context.OrderItems.Update(orderItem);
         }
 
+        public async Task<IEnumerable<Order>> GetListByClientId(Guid clientId)
+        {
+            return await _context.Orders.AsNoTracking().Where(p => p.ClientId == clientId).ToListAsync();
+        }
+
+        public void RemoveItem(OrderItem orderItem)
+        {
+            _context.OrderItems.Remove(orderItem);
+        }
+
+        public async Task<OrderItem> GetOrderItemByOrder(Guid orderId, Guid productId)
+        {
+            return await _context.OrderItems.FirstOrDefaultAsync(p => p.ProductId == productId && p.OrderId == orderId);
+        }
+
+        public async Task<Voucher> GetVoucherByCode(string code)
+        {
+            return await _context.Vouchers.FirstOrDefaultAsync(p => p.Code == code);
+        }
+
         public void Dispose()
         {
-            throw new NotImplementedException();
+            _context.Dispose();
         }
     }
 }

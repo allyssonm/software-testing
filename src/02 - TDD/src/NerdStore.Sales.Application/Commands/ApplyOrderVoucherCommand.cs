@@ -1,24 +1,38 @@
-﻿using NerdStore.Core.Messages;
+﻿using FluentValidation;
+using NerdStore.Core.Messages;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NerdStore.Sales.Application.Commands
 {
     public class ApplyOrderVoucherCommand : Command
     {
-        private Guid _clientId;
-        private string _voucherCodigo;
+        public Guid ClientId { get; private set; }
+        public string VoucherCode { get; private set; }
 
-        public ApplyOrderVoucherCommand(Guid clientId, string voucherCodigo)
+        public ApplyOrderVoucherCommand(Guid clientId, string voucherCode)
         {
-            _clientId = clientId;
-            _voucherCodigo = voucherCodigo;
+            ClientId = clientId;
+            VoucherCode = voucherCode;
         }
 
         public override bool IsValid()
         {
-            throw new NotImplementedException();
+            ValidationResult = new ApplyOrderVoucherCommandValidation().Validate(this);
+            return ValidationResult.IsValid;
+        }
+    }
+
+    public class ApplyOrderVoucherCommandValidation : AbstractValidator<ApplyOrderVoucherCommand>
+    {
+        public ApplyOrderVoucherCommandValidation()
+        {
+            RuleFor(c => c.ClientId)
+                .NotEqual(Guid.Empty)
+                .WithMessage("Id do cliente inválido");
+
+            RuleFor(c => c.VoucherCode)
+                .NotEmpty()
+                .WithMessage("O código do voucher não pode ser vazio");
         }
     }
 }

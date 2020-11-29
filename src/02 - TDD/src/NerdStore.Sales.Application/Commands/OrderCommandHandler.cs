@@ -68,19 +68,100 @@ namespace NerdStore.Sales.Application.Commands
             return await _orderRepository.UnitOfWork.Commit();
         }
 
-        public Task<bool> Handle(UpdateOrderItemCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(UpdateOrderItemCommand command, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            if (!IsCommandValid(command)) return false;
+
+            var order = await _orderRepository.GetDraftOrderByClientId(command.ClientId);
+
+            if (order == null)
+            {
+                await _mediator.Publish(new DomainNotification("order", "Pedido não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            var orderItem = await _orderRepository.GetOrderItemByOrder(order.Id, command.ProductId);
+
+            if (!order.OrderItemExists(orderItem))
+            {
+                await _mediator.Publish(new DomainNotification("order", "Item do pedido não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            order.UpdateUnits(orderItem, command.Quantity);
+            order.AddEvent(new UpdatedProductOrderEvent(command.ClientId, order.Id, command.ProductId, command.Quantity));
+
+            _orderRepository.UpdateOrderItem(orderItem);
+            _orderRepository.Update(order);
+
+            return await _orderRepository.UnitOfWork.Commit();
         }
 
-        public Task<bool> Handle(RemoveOrderItemCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(RemoveOrderItemCommand command, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            if (!IsCommandValid(command)) return false;
+
+            var order = await _orderRepository.GetDraftOrderByClientId(command.ClientId);
+
+            if (order == null)
+            {
+                await _mediator.Publish(new DomainNotification("order", "Pedido não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            var orderItem = await _orderRepository.GetOrderItemByOrder(order.Id, command.ProductId);
+
+            if (orderItem != null && !order.OrderItemExists(orderItem))
+            {
+                await _mediator.Publish(new DomainNotification("order", "Item do pedido não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            order.RemoveOrderItem(orderItem);
+            order.AddEvent(new RemovedProductOrderEvent(command.ClientId, order.Id, command.ProductId));
+
+            _orderRepository.RemoveItem(orderItem);
+            _orderRepository.Update(order);
+
+            return await _orderRepository.UnitOfWork.Commit();
         }
 
-        public Task<bool> Handle(ApplyOrderVoucherCommand request, CancellationToken cancellationToken)
+        public async Task<bool> Handle(ApplyOrderVoucherCommand command, CancellationToken cancellationToken)
         {
-            throw new System.NotImplementedException();
+            if (!IsCommandValid(command)) return false;
+
+            var order = await _orderRepository.GetDraftOrderByClientId(command.ClientId);
+
+            if (order == null)
+            {
+                await _mediator.Publish(new DomainNotification("order", "Pedido não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            var voucher = await _orderRepository.GetVoucherByCode(command.VoucherCode);
+
+            if (voucher == null)
+            {
+                await _mediator.Publish(new DomainNotification("order", "Voucher não encontrado!"), cancellationToken);
+                return false;
+            }
+
+            var voucherAplicacaoValidation = order.ApplyVoucher(voucher);
+            if (!voucherAplicacaoValidation.IsValid)
+            {
+                foreach (var error in voucherAplicacaoValidation.Errors)
+                {
+                    await _mediator.Publish(new DomainNotification(error.ErrorCode, error.ErrorMessage), cancellationToken);
+                }
+
+                return false;
+            }
+
+            order.AddEvent(new AppliedVoucherOrderEvent(command.ClientId, order.Id, voucher.Id));
+
+            _orderRepository.Update(order);
+
+            return await _orderRepository.UnitOfWork.Commit();
         }
 
         private bool IsCommandValid(Command command)

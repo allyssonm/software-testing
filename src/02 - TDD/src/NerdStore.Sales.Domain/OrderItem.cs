@@ -30,6 +30,11 @@ namespace NerdStore.Sales.Domain
             Quantity += units;
         }
 
+        internal void UpdateUnits(int units)
+        {
+            Quantity = units;
+        }
+
         internal decimal CalculatePrice()
         {
             return Quantity * UnitPrice;
