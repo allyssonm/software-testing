@@ -36,6 +36,7 @@ namespace NerdStore.WebApplication.MVC
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddRazorPages();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -120,6 +121,7 @@ namespace NerdStore.WebApplication.MVC
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>

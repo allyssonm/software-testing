@@ -7,26 +7,26 @@ namespace NerdStore.WebApplication.MVC.Controllers
 {
     public class ShowcaseController : Controller
     {
-        private readonly IProductAppService _produtoAppService;
+        private readonly IProductAppService _productAppService;
 
         public ShowcaseController(IProductAppService produtoAppService)
         {
-            _produtoAppService = produtoAppService;
+            _productAppService = produtoAppService;
         }
 
         [HttpGet]
         [Route("")]
-        [Route("vitrine")]
+        [Route("showcase")]
         public async Task<IActionResult> Index()
         {
-            return View(await _produtoAppService.GetAll());
+            return View(await _productAppService.GetAll());
         }
 
         [HttpGet]
-        [Route("produto-detalhe/{id}")]
-        public async Task<IActionResult> ProdutoDetalhe(Guid id)
+        [Route("product-detail/{id}")]
+        public async Task<IActionResult> ProductDetail(Guid id)
         {
-            return View(await _produtoAppService.GetById(id));
+            return View(await _productAppService.GetById(id));
         }
     }
 }

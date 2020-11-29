@@ -6,6 +6,6 @@ namespace NerdStore.WebApplication.MVC.Models
     {
         public Guid Id { get; set; }
 
-        public int Quantidade { get; set; }
+        public int Quantity { get; set; }
     }
 }

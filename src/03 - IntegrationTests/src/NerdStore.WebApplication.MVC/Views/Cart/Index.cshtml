@@ -30,13 +30,13 @@
                                         <td class="col-sm-5 col-md-5">
                                             <div class="media">
                                                 <div class="media-body">
-                                                    <h4 class="media-heading"><a asp-controller="Vitrine" asp-action="ProdutoDetalhe" asp-route-id="@item.ProductId">@item.ProductName</a></h4>
+                                                    <h4 class="media-heading"><a asp-controller="Showcase" asp-action="ProductDetail" asp-route-id="@item.ProductId">@item.ProductName</a></h4>
                                                 </div>
                                             </div>
                                         </td>
 
                                         <td class="col-sm-2 col-md-2" style="text-align: center">
-                                            <form method="post" asp-controller="Carrinho" asp-action="AtualizarItem">
+                                            <form method="post" asp-controller="Cart" asp-action="UpdateItem">
                                                 <input type="hidden" id="Id" name="Id" value="@item.ProductId" />
                                                 <div class="row" style="float: left">
                                                     <input style="width: 70px" type="text" class="form-control" name="quantidade" id="quantidade" value="@item.Quantity">
@@ -48,11 +48,11 @@
                                                 </div>
                                             </form>
                                         </td>
-                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorUnitario">@item.UnitValue.ToString("C")</strong></td>
-                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorTotal">@item.TotalValue.ToString("C")</strong></td>
+                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorUnitario">@item.UnitPrice.ToString("C")</strong></td>
+                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorTotal">@item.TotalPrice.ToString("C")</strong></td>
 
                                         <td class="col-sm-1 col-md-1">
-                                            <form method="post" asp-controller="Carrinho" asp-action="RemoverItem">
+                                            <form method="post" asp-controller="Cart" asp-action="RemoveItem">
                                                 <input type="hidden" id="Id" name="Id" value="@item.ProductId" />
                                                 <button type="submit" class="btn btn-danger">
                                                     <span class="fas fa-trash-alt"></span> Remover
@@ -73,7 +73,7 @@
                             <tr>
                                 <td> </td>
                                 <td colspan="2">
-                                    <form method="post" asp-controller="Carrinho" asp-action="AplicarVoucher">
+                                    <form method="post" asp-controller="Cart" asp-action="ApplyVoucher">
                                         <div class="row" style="float: left">
                                             <input placeholder="Voucher" style="width: 150px" type="text" class="form-control" name="VoucherCodigo" id="VoucherCodigo" value="@Model.VoucherCode">
                                         </div>
@@ -95,7 +95,7 @@
                                     <h3>Total</h3>
                                 </td>
                                 <td class="text-right">
-                                    <h3><strong>@Model.TotalValue.ToString("C")</strong></h3>
+                                    <h3><strong>@Model.TotalPrice.ToString("C")</strong></h3>
                                 </td>
                             </tr>
                             <tr>
@@ -103,12 +103,12 @@
                                 <td> </td>
                                 <td> </td>
                                 <td>
-                                    <a asp-controller="Vitrine" asp-action="Index" class="btn btn-dark">
+                                    <a asp-controller="Showcase" asp-action="Index" class="btn btn-dark">
                                         <span class="fa fa-shopping-cart"></span>Continuar Compra
                                     </a>
                                 </td>
                                 <td>
-                                    <a asp-controller="Carrinho" asp-action="ResumoDaCompra" class="btn btn-success">
+                                    <a asp-controller="Cart" asp-action="PurchaseSummary" class="btn btn-success">
                                         <span class="fas fa-play"></span><br /> Finalizar Compra
                                     </a>
                                 </td>

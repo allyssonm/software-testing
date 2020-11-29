@@ -14,42 +14,42 @@ namespace NerdStore.WebApplication.MVC.Controllers
     [Authorize]
     public class CartController : ControllerBase
     {
-        private readonly IProductAppService _produtoAppService;
+        private readonly IProductAppService _productAppService;
         private readonly IOrderQueries _orderQueries;
         private readonly IMediator _mediatorHandler;
 
         public CartController(INotificationHandler<DomainNotification> notifications,
-                                  IProductAppService produtoAppService,
+                                  IProductAppService productAppService,
                                   IMediator mediatorHandler, 
-                                  IOrderQueries pedidoQueries,
+                                  IOrderQueries orderQueries,
                                   IHttpContextAccessor httpContextAccessor) : base(notifications, mediatorHandler, httpContextAccessor)
         {
-            _produtoAppService = produtoAppService;
+            _productAppService = productAppService;
             _mediatorHandler = mediatorHandler;
-            _orderQueries = pedidoQueries;
+            _orderQueries = orderQueries;
         }
 
         [HttpGet]
-        [Route("meu-carrinho")]
+        [Route("my-cart")]
         public async Task<IActionResult> Index()
         {
             return View(await _orderQueries.GetClientCart(ClientId));
         }
 
         [HttpPost]
-        [Route("meu-carrinho")]
-        public async Task<IActionResult> AdicionarItem(Guid id, int quantidade)
+        [Route("my-cart")]
+        public async Task<IActionResult> AddItem(Guid id, int quantity)
         {
-            var produto = await _produtoAppService.GetById(id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(id);
+            if (product == null) return BadRequest();
 
-            if (produto.StockQuantity < quantidade)
+            if (product.StockQuantity < quantity)
             {
                 TempData["Erro"] = "Produto com estoque insuficiente";
-                return RedirectToAction("ProdutoDetalhe", "Vitrine", new { id });
+                return RedirectToAction("ProductDetail", "Showcase", new { id });
             }
 
-            var command = new AddOrderItemCommand(ClientId, produto.Id, produto.Name, quantidade, produto.Price);
+            var command = new AddOrderItemCommand(ClientId, product.Id, product.Name, quantity, product.Price);
             await _mediatorHandler.Send(command);
 
             if (IsValidOperation())
@@ -58,15 +58,15 @@ namespace NerdStore.WebApplication.MVC.Controllers
             }
 
             TempData["Erros"] = GetErrorMessages();
-            return RedirectToAction("ProdutoDetalhe", "Vitrine", new { id });
+            return RedirectToAction("ProductDetail", "Showcase", new { id });
         }
 
         [HttpPost]
-        [Route("remover-item")]
-        public async Task<IActionResult> RemoverItem(Guid id)
+        [Route("remove-item")]
+        public async Task<IActionResult> RemoveItem(Guid id)
         {
-            var produto = await _produtoAppService.GetById(id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(id);
+            if (product == null) return BadRequest();
 
             var command = new RemoveOrderItemCommand(ClientId, id);
             await _mediatorHandler.Send(command);
@@ -80,13 +80,13 @@ namespace NerdStore.WebApplication.MVC.Controllers
         }
 
         [HttpPost]
-        [Route("atualizar-item")]
-        public async Task<IActionResult> AtualizarItem(Guid id, int quantidade)
+        [Route("update-item")]
+        public async Task<IActionResult> UpdateItem(Guid id, int quantity)
         {
-            var produto = await _produtoAppService.GetById(id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(id);
+            if (product == null) return BadRequest();
 
-            var command = new UpdateOrderItemCommand(ClientId, id, quantidade);
+            var command = new UpdateOrderItemCommand(ClientId, id, quantity);
             await _mediatorHandler.Send(command);
 
             if (IsValidOperation())
@@ -98,10 +98,10 @@ namespace NerdStore.WebApplication.MVC.Controllers
         }
 
         [HttpPost]
-        [Route("aplicar-voucher")]
-        public async Task<IActionResult> AplicarVoucher(string voucherCodigo)
+        [Route("apply-voucher")]
+        public async Task<IActionResult> ApplyVoucher(string voucherCode)
         {
-            var command = new ApplyOrderVoucherCommand(ClientId, voucherCodigo);
+            var command = new ApplyOrderVoucherCommand(ClientId, voucherCode);
             await _mediatorHandler.Send(command);
 
             if (IsValidOperation())
@@ -113,8 +113,8 @@ namespace NerdStore.WebApplication.MVC.Controllers
         }
 
         [HttpGet]
-        [Route("resumo-da-compra")]
-        public async Task<IActionResult> ResumoDaCompra()
+        [Route("purchase-summary")]
+        public async Task<IActionResult> PurchaseSummary()
         {
             return View(await _orderQueries.GetClientCart(ClientId));
         }

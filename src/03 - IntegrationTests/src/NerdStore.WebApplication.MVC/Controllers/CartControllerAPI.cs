@@ -21,8 +21,8 @@ namespace NerdStore.WebApplication.MVC.Controllers
     [Authorize]
     public class CartControllerApi : ControllerBase
     {
-        private readonly IProductAppService _produtoAppService;
-        private readonly IOrderQueries _pedidoQueries;
+        private readonly IProductAppService _productAppService;
+        private readonly IOrderQueries _orderQueries;
         private readonly IMediator _mediatorHandler;
 
         private readonly SignInManager<IdentityUser> _signInManager;
@@ -30,66 +30,66 @@ namespace NerdStore.WebApplication.MVC.Controllers
         private readonly AppSettings _appSettings;
 
         public CartControllerApi(INotificationHandler<DomainNotification> notifications,
-                                  IProductAppService produtoAppService,
+                                  IProductAppService productAppService,
                                   IMediator mediatorHandler, 
-                                  IOrderQueries pedidoQueries,
+                                  IOrderQueries orderQueries,
                                   IHttpContextAccessor httpContextAccessor, 
                                   SignInManager<IdentityUser> signInManager, 
                                   UserManager<IdentityUser> userManager,
                                   IOptions<AppSettings> appSettings) : base(notifications, mediatorHandler, httpContextAccessor)
         {
-            _produtoAppService = produtoAppService;
+            _productAppService = productAppService;
             _mediatorHandler = mediatorHandler;
-            _pedidoQueries = pedidoQueries;
+            _orderQueries = orderQueries;
             _signInManager = signInManager;
             _userManager = userManager;
             _appSettings = appSettings.Value;
         }
 
         [HttpGet]
-        [Route("api/carrinho")]
+        [Route("api/cart")]
         public async Task<IActionResult> Get()
         {
-            return Response(await _pedidoQueries.GetClientCart(ClientId));
+            return Response(await _orderQueries.GetClientCart(ClientId));
         }
 
         [HttpPost]
-        [Route("api/carrinho")]
+        [Route("api/cart")]
         public async Task<IActionResult> Post([FromBody] ItemViewModel item)
         {
-            var produto = await _produtoAppService.GetById(item.Id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(item.Id);
+            if (product == null) return BadRequest();
 
-            if (produto.StockQuantity < item.Quantidade)
+            if (product.StockQuantity < item.Quantity)
             {
                 NotifyError("ErroValidacao","Produto com estoque insuficiente");
             }
 
-            var command = new AddOrderItemCommand(ClientId, produto.Id, produto.Name, item.Quantidade, produto.Price);
+            var command = new AddOrderItemCommand(ClientId, product.Id, product.Name, item.Quantity, product.Price);
             await _mediatorHandler.Send(command);
 
             return Response();
         }
 
         [HttpPut]
-        [Route("api/carrinho/{id:guid}")]
+        [Route("api/cart/{id:guid}")]
         public async Task<IActionResult> Put(Guid id, [FromBody] ItemViewModel item)
         {
-            var produto = await _produtoAppService.GetById(id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(id);
+            if (product == null) return BadRequest();
 
-            var command = new UpdateOrderItemCommand(ClientId, produto.Id, item.Quantidade);
+            var command = new UpdateOrderItemCommand(ClientId, product.Id, item.Quantity);
             await _mediatorHandler.Send(command);
 
             return Response();
         }
 
         [HttpDelete]
-        [Route("api/carrinho/{id:guid}")]
+        [Route("api/cart/{id:guid}")]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var produto = await _produtoAppService.GetById(id);
-            if (produto == null) return BadRequest();
+            var product = await _productAppService.GetById(id);
+            if (product == null) return BadRequest();
 
             var command = new RemoveOrderItemCommand(ClientId, id);
             await _mediatorHandler.Send(command);
@@ -101,18 +101,18 @@ namespace NerdStore.WebApplication.MVC.Controllers
         [HttpPost("api/login")]
         public async Task<IActionResult> Login([FromBody] LoginViewModel login)
         {
-            var result = await _signInManager.PasswordSignInAsync(login.Email, login.Senha, false, true);
+            var result = await _signInManager.PasswordSignInAsync(login.Email, login.Password, false, true);
 
             if (result.Succeeded)
             {
-                return Ok(await GerarJwt(login.Email));
+                return Ok(await GenerateJwt(login.Email));
             }
 
             NotifyError("login","Usuário ou Senha incorretos");
             return Response();
         }
 
-        private async Task<string> GerarJwt(string email)
+        private async Task<string> GenerateJwt(string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
             var claims = await _userManager.GetClaimsAsync(user);

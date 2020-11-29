@@ -39,5 +39,10 @@ namespace NerdStore.Sales.Domain
         {
             return Quantity * UnitPrice;
         }
+
+        internal void LinkOrder(Guid orderId)
+        {
+            OrderId = orderId;
+        }
     }
 }

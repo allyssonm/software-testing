@@ -39,9 +39,9 @@ namespace NerdStore.WebApplication.MVC.Controllers
             return _notifications.GetNotifications().Select(c => c.Value).ToList();
         }
 
-        protected void NotifyError(string codigo, string mensagem)
+        protected void NotifyError(string code, string message)
         {
-            _mediatorHandler.Publish(new DomainNotification(codigo, mensagem));
+            _mediatorHandler.Publish(new DomainNotification(code, message));
         }
 
         protected new IActionResult Response(object result = null)
