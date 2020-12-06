@@ -17,7 +17,7 @@ namespace NerdStore.Sales.Data.Repository
             _context = context;
         }
 
-        public IUnitOfWork UnitOfWork => throw new NotImplementedException();
+        public IUnitOfWork UnitOfWork => _context;
 
         public void Add(Order order)
         {

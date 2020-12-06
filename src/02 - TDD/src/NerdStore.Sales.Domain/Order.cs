@@ -16,9 +16,9 @@ namespace NerdStore.Sales.Domain
             _orderItems = new List<OrderItem>();
         }
 
-        public int Code { get; set; }
-        public Guid ClientId { get; set; }
-        public Guid VoucherId { get; set; }
+        public int Code { get; private set; }
+        public Guid ClientId { get; private set; }
+        public Guid? VoucherId { get; private set; }
         public decimal TotalPrice { get; private set; }
         public decimal Discount { get; private set; }
         public OrderStatus OrderStatus { get; private set; }
