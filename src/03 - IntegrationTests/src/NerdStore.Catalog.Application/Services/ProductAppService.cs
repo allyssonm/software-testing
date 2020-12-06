@@ -59,9 +59,9 @@ namespace NerdStore.Catalog.Application.Services
             await _productRepository.UnitOfWork.Commit();
         }
 
-        public async Task<ProductViewModel> DebitStock(Guid id, int quantidade)
+        public async Task<ProductViewModel> DebitStock(Guid id, int quantity)
         {
-            if (!_stockService.DebitStock(id, quantidade).Result)
+            if (!_stockService.DebitStock(id, quantity).Result)
             {
                 throw new DomainException("Fail on debit stock");
             }
@@ -69,9 +69,9 @@ namespace NerdStore.Catalog.Application.Services
             return _mapper.Map<ProductViewModel>(await _productRepository.GetById(id));
         }
 
-        public async Task<ProductViewModel> Restock(Guid id, int quantidade)
+        public async Task<ProductViewModel> Restock(Guid id, int quantity)
         {
-            if (!_stockService.Restock(id, quantidade).Result)
+            if (!_stockService.Restock(id, quantity).Result)
             {
                 throw new DomainException("Fail on restock");
             }

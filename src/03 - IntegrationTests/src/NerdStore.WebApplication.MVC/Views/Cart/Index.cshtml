@@ -39,7 +39,7 @@
                                             <form method="post" asp-controller="Cart" asp-action="UpdateItem">
                                                 <input type="hidden" id="Id" name="Id" value="@item.ProductId" />
                                                 <div class="row" style="float: left">
-                                                    <input style="width: 70px" type="text" class="form-control" name="quantidade" id="quantidade" value="@item.Quantity">
+                                                    <input style="width: 70px" type="text" class="form-control" name="quantity" id="quantity" value="@item.Quantity">
                                                 </div>
                                                 <div class="row" style="float: right">
                                                     <button type="submit" class="btn btn-success">
@@ -48,8 +48,8 @@
                                                 </div>
                                             </form>
                                         </td>
-                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorUnitario">@item.UnitPrice.ToString("C")</strong></td>
-                                        <td class="col-sm-1 col-md-1 text-center"><strong id="valorTotal">@item.TotalPrice.ToString("C")</strong></td>
+                                        <td class="col-sm-1 col-md-1 text-center"><strong id="unitValue">@item.UnitPrice.ToString("C")</strong></td>
+                                        <td class="col-sm-1 col-md-1 text-center"><strong id="totalPrice">@item.TotalPrice.ToString("C")</strong></td>
 
                                         <td class="col-sm-1 col-md-1">
                                             <form method="post" asp-controller="Cart" asp-action="RemoveItem">
@@ -75,7 +75,7 @@
                                 <td colspan="2">
                                     <form method="post" asp-controller="Cart" asp-action="ApplyVoucher">
                                         <div class="row" style="float: left">
-                                            <input placeholder="Voucher" style="width: 150px" type="text" class="form-control" name="VoucherCodigo" id="VoucherCodigo" value="@Model.VoucherCode">
+                                            <input placeholder="Voucher" style="width: 150px" type="text" class="form-control" name="VoucherCode" id="VoucherCode" value="@Model.VoucherCode">
                                         </div>
                                         <div class="row" style="float: right">
                                             <button type="submit" class="btn btn-success">
