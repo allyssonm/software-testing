@@ -1,19 +1,36 @@
-﻿using System;
+﻿using NerdStore.BDD.Tests.Config;
+using System;
 using TechTalk.SpecFlow;
+using Xunit;
 
 namespace NerdStore.BDD.Tests.Order
 {
     [Binding]
+    [CollectionDefinition(nameof(AutomationWebTestsFixture))]
     public class Order_AddItemToOrderSteps
     {
+        private readonly AutomationWebTestsFixture _testsFixture;
+        private readonly OrderPage _orderPage;
+        private string _productUrl;
+
+        public Order_AddItemToOrderSteps(AutomationWebTestsFixture testsFixture)
+        {
+            _testsFixture = testsFixture;
+            _orderPage = new OrderPage(_testsFixture.BrowserHelper);
+        }
+
         [Given(@"a product is in showcase")]
         public void GivenAProductIsInShowcase()
         {
             // Arrange
+            _orderPage.AccessProductsShowcase();
 
             // Act
+            _orderPage.GetProductDetails();
+            _productUrl = _orderPage.GetUrl();
 
             // Assert
+            Assert.True(_orderPage.CheckIfProductIsAvailable());
         }
         
         [Given(@"it is available on stock")]
