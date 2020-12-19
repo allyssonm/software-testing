@@ -11,5 +11,8 @@ namespace NerdStore.BDD.Tests.User
 
         public bool ValidateLoggedUserGreeting(User user) =>
             Helper.GetTextElementById("greetingUser").Contains(user.Email);
+
+        public bool ValidateErrorMessageOnFormSubmit(string message) =>
+            Helper.GetTextElementByClass("text-danger").Contains(message);
     }
 }

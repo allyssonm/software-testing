@@ -1,13 +1,10 @@
 ﻿using NerdStore.BDD.Tests.Config;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace NerdStore.BDD.Tests.User
 {
-    public class RegisterUserPage : BaseUserPage
+    public class UserRegisterPage : BaseUserPage
     {
-        public RegisterUserPage(SeleniumHelper helper) : base(helper)
+        public UserRegisterPage(SeleniumHelper helper) : base(helper)
         {
         }
 

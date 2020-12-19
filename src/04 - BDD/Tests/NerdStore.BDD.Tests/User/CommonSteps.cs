@@ -11,13 +11,13 @@ namespace NerdStore.BDD.Tests.User
     [CollectionDefinition(nameof(AutomationWebTestsFixture))]
     public class CommonSteps
     {
-        private readonly RegisterUserPage _registerUserPage;
+        private readonly UserRegisterPage _registerUserPage;
         private readonly AutomationWebTestsFixture _testsFixture;
 
         public CommonSteps(AutomationWebTestsFixture testsFixture)
         {
             _testsFixture = testsFixture;
-            _registerUserPage = new RegisterUserPage(_testsFixture.BrowserHelper);
+            _registerUserPage = new UserRegisterPage(_testsFixture.BrowserHelper);
         }
 
         [Given(@"That the visitor is accessing the store website")]

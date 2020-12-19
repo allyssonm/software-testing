@@ -1,5 +1,4 @@
 ﻿using NerdStore.BDD.Tests.Config;
-using System;
 using TechTalk.SpecFlow;
 using Xunit;
 
@@ -9,13 +8,13 @@ namespace NerdStore.BDD.Tests.User
     [CollectionDefinition(nameof(AutomationWebTestsFixture))]
     public class UserRegisterSteps
     {
-        private readonly RegisterUserPage _registerUserPage;
+        private readonly UserRegisterPage _registerUserPage;
         private readonly AutomationWebTestsFixture _testsFixture;
 
         public UserRegisterSteps(AutomationWebTestsFixture testsFixture)
         {
             _testsFixture = testsFixture;
-            _registerUserPage = new RegisterUserPage(_testsFixture.BrowserHelper);
+            _registerUserPage = new UserRegisterPage(_testsFixture.BrowserHelper);
         }
 
         [When(@"He click on register")]
@@ -51,25 +50,45 @@ namespace NerdStore.BDD.Tests.User
         [When(@"Fill in the form data with a password without capital letters")]
         public void WhenFillInTheFormDataWithAPasswordWithoutCapitalLetters(Table table)
         {
-            ScenarioContext.Current.Pending();
+            // Arrage
+            _testsFixture.GenerateUserData();
+            var user = _testsFixture.User;
+            user.Password = "asdf_1234";
+
+            // Act
+            _registerUserPage.FillRegisterForm(user);
+
+            // Assert
+            Assert.True(_registerUserPage.IsRegisterFormFilled(user));
         }
         
         [When(@"Fill in the form data with a password without a special character")]
         public void WhenFillInTheFormDataWithAPasswordWithoutASpecialCharacter(Table table)
         {
-            ScenarioContext.Current.Pending();
+            // Arrage
+            _testsFixture.GenerateUserData();
+            var user = _testsFixture.User;
+            user.Password = "Asdf1234";
+
+            // Act
+            _registerUserPage.FillRegisterForm(user);
+
+            // Assert
+            Assert.True(_registerUserPage.IsRegisterFormFilled(user));
         }
         
         [Then(@"He will receive an error message that the password must contain a capital letter")]
         public void ThenHeWillReceiveAnErrorMessageThatThePasswordMustContainACapitalLetter()
         {
-            ScenarioContext.Current.Pending();
+            // Assert
+            Assert.True(_registerUserPage.ValidateErrorMessageOnFormSubmit("Passwords must have at least one uppercase ('A'-'Z')"));
         }
         
         [Then(@"He will receive an error message that the password must contain a special character")]
         public void ThenHeWillReceiveAnErrorMessageThatThePasswordMustContainASpecialCharacter()
         {
-            ScenarioContext.Current.Pending();
+            // Assert
+            Assert.True(_registerUserPage.ValidateErrorMessageOnFormSubmit("Passwords must have at least one non alphanumeric character"));
         }
     }
 }
