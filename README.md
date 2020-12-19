@@ -9,7 +9,7 @@ Content:
 
 - Unit Tests
 - Integration Tests
-- Load Tests
+- Load / Performance / Stress Tests
 - Automated Tests
 - TDD
 - BDD
@@ -23,3 +23,5 @@ Tools:
 - Bogus
 - FluentValidation
 - FluentAssertion
+- JMeter
+- BlazeMeter
